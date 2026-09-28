@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  singaling-service:
+    build: .
+    container_name: singaling_service_app
+    ports:
+      - "8081:8081"
+    env_file:
+      - .env
+    restart: unless-stopped
+    # Jika menggunakan DB di server yang sama, pastikan network-nya terhubung
+    # networks:
+    #   - singaling_network
+
+# networks:
+#   singaling_network:
+#     driver: bridge
