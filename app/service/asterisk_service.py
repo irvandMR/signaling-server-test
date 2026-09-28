@@ -27,7 +27,9 @@ async def originate_call_with_sdp(caller_extension: str, target_extension: str, 
         target_contact = f"sip:{target_extension}@{PBX_IP}"
         
         # 2. Buka percakapan SIP (Dialog) ke Asterisk
+        # local_addr port menggunakan 5061 (atau 0 untuk random) agar tidak menabrak port 5060 milik Asterisk di server yang sama
         dialog = await app.start_dialog(
+            local_addr=('0.0.0.0', 5061),
             remote_addr=(PBX_IP, PBX_PORT),
             from_uri=my_contact,
             to_uri=target_contact
