@@ -43,15 +43,12 @@ async def connect(sid, environ, auth):
     await sio.save_session(sid, {"extension": extension, "token": new_token})
     
     #
-    # 5. Kirim balasan token ke klien dengan delay agar tidak kena race condition
-    async def delayed_success():
-        await asyncio.sleep(0.5)
-        await sio.emit("connected", {
-            "message": f"Login Sukses! Hallo {extension}",
-            "new_token": new_token
-        }, to=sid)
-        
-    sio.start_background_task(delayed_success)
+    # 5. Kirim balasan token ke klien langsung tanpa delay
+    await sio.emit("connected", {
+        "message": f"Login Sukses! Hallo {extension}",
+        "new_token": new_token
+    }, to=sid)
+
     return True
 
 @sio.event
