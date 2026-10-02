@@ -44,9 +44,13 @@ async def originate_call_with_sdp(caller_extension: str, target_extension: str, 
         target_contact = f"sip:{target_extension}@{PBX_IP}"
         
         # 2. Buka percakapan SIP (Dialog) ke Asterisk
-        # local_addr port diset ke 0 agar OS memberikan port acak secara dinamis (mencegah address already in use)
+        # Kita generate port acak secara manual, karena aiosip ternyata mengalami bug syntax error 
+        # (mengirim tulisan "port 0" di header Via) jika kita menggunakan port 0 dari OS.
+        import random
+        local_port = random.randint(20000, 60000)
+        
         dialog = await app.start_dialog(
-            local_addr=('0.0.0.0', 0),
+            local_addr=('127.0.0.1', local_port),
             remote_addr=(PBX_IP, PBX_PORT),
             from_uri=my_contact,
             to_uri=target_contact
