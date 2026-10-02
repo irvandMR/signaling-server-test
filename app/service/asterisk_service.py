@@ -56,7 +56,7 @@ async def originate_call_with_sdp(caller_extension: str, target_extension: str, 
         log.info(f"Mengirim SIP INVITE ke Asterisk...")
         
         # 3. Tembak SIP INVITE dengan menyisipkan SDP mentah dari klien Socket.IO
-        response = await dialog.invite(payload=sdp_offer, content_type="application/sdp")
+        response = await dialog.invite(sdp=sdp_offer)
         
         # 4. Tangkap balasan dari Asterisk
         if response.status_code == 200:
