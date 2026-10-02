@@ -1,5 +1,14 @@
 import logging
 import asyncio
+import types
+
+# Patch untuk library aiosip (karena menggunakan fitur lama dari Python < 3.11)
+if not hasattr(asyncio, "coroutine"):
+    def coroutine(func):
+        return func
+    asyncio.coroutine = coroutine
+    asyncio.iscoroutine = asyncio.iscoroutinefunction
+
 import aiosip
 
 log = logging.getLogger("sip-gateway")
