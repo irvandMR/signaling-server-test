@@ -5,8 +5,8 @@ import asyncio
 sio = socketio.AsyncClient()
 
 # Kredensial untuk testing (Sesuaikan dengan data user yang ada di database)
-EXTENSION = "1008" # Ganti dengan ekstensi yang valid
-PASSWORD = "7890" # Ganti dengan password yang valid
+EXTENSION = "11099" # Ganti dengan ekstensi yang valid
+PASSWORD = "Pass1234" # Ganti dengan password yang valid
 
 @sio.event
 async def connect():
