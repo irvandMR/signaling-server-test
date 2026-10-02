@@ -1,6 +1,8 @@
 import logging
 import asyncio
 import types
+import collections
+import collections.abc
 
 # Patch untuk library aiosip (karena menggunakan fitur lama dari Python < 3.11)
 if not hasattr(asyncio, "coroutine"):
@@ -8,6 +10,12 @@ if not hasattr(asyncio, "coroutine"):
         return func
     asyncio.coroutine = coroutine
     asyncio.iscoroutine = asyncio.iscoroutinefunction
+
+# Patch tambahan: di Python 3.10+, MutableMapping dipindah ke collections.abc
+collections.MutableMapping = collections.abc.MutableMapping
+collections.Mapping = collections.abc.Mapping
+collections.Iterable = collections.abc.Iterable
+collections.Iterator = collections.abc.Iterator
 
 import aiosip
 
