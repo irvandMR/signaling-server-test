@@ -70,7 +70,7 @@ async def main():
         
         # Kirim kredensial melalui param 'auth' (sesuai logic di sockets.py)
         await sio.connect(
-            "http://localhost:8081",
+            "http://localhost:3461",
             auth={"user": EXTENSION, "password": PASSWORD},
             transports=["websocket", "polling"]
         )

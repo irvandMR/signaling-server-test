@@ -24,8 +24,8 @@ RUN pip install aiovoip
 # Copy project files
 COPY . /app/
 
-# Expose port (Uvicorn berjalan di 8081)
-EXPOSE 8081
+# Expose port (Uvicorn berjalan di 3461)
+EXPOSE 3461
 
 # Command untuk menjalankan aplikasi
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8081"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "3461"]
