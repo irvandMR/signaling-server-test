@@ -7,6 +7,7 @@ sio = socketio.AsyncClient()
 # Kredensial untuk testing (Sesuaikan dengan data user yang ada di database)
 EXTENSION = "11099" # Ganti dengan ekstensi yang valid
 PASSWORD = "Pass1234" # Ganti dengan password yang valid
+PBX_IP = "127.0.0.1"
 
 @sio.event
 async def connect():
@@ -27,6 +28,19 @@ async def on_connected(data):
     token = data.get("new_token")
     print(f"[Client] Token didapatkan: {token}")
     
+    # --- TEST UDP MENTAH KE ASTERISK ---
+    print("\n[Client] =========================================")
+    print(f"[Client] Mengirim UDP Test Ping ke Asterisk di {PBX_IP}:5060...")
+    try:
+        import socket
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        sock.settimeout(2)
+        # Kirim pesan ngawur (Asterisk akan merespons dengan error jika menerimanya)
+        sock.sendto(b"OPTIONS sip:1008@127.0.0.1 SIP/2.0\r\n\r\n", (PBX_IP, 5060))
+        print("[Client] UDP Test Ping terkirim! Silakan cek log Asterisk Anda.")
+    except Exception as e:
+        print(f"[Client] Gagal mengirim UDP Test Ping: {e}")
+        
     # --- MULAI SIMULASI PANGGILAN WEBRTC ---
     print("\n[Client] =========================================")
     print(f"[Client] Mencoba melakukan panggilan ke 1008...")
