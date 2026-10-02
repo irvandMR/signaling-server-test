@@ -4,8 +4,7 @@ services:
   singaling-service:
     build: .
     container_name: singaling_service_app
-    ports:
-      - "8081:8081"
+    network_mode: "host"
     env_file:
       - .env
     restart: unless-stopped
