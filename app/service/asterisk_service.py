@@ -66,21 +66,15 @@ async def originate_call_with_sdp(caller_extension: str, target_extension: str, 
         
         # 4. Tangkap balasan dari Asterisk
         # Kita perlu menembak SIP dan menunggu response (200 OK)
-        try:
-            # Karena aiovoip mengembalikan dialog, kita perlu memeriksa balasan (jika butuh fitur full call).
-            # Untuk sekarang kita anggap berhasil jika invite tidak melempar error.
-            log.info("SIP INVITE terkirim. Menunggu 200 OK...")
-            # Kita bisa await dialog.ready() jika ingin menunggu 200 OK, tapi sementara kita mock saja dulu
-            # agar alur Socket.IO-nya terus berjalan.
-            sdp_answer = "v=0\r\no=- 123456 123456 IN IP4 127.0.0.1\r\ns=Asterisk\r\nc=IN IP4 127.0.0.1\r\nt=0 0\r\nm=audio 10000 RTP/SAVPF 111\r\n"
-            
-            # Simpan dialog agar kita bisa memutus telepon (mengirim SIP BYE) nantinya
-            active_sip_calls[caller_extension] = dialog
-            
-            return {"status": "success", "sdp": sdp_answer}
-        else:
-            log.error(f"Asterisk menolak: {response.status_code}")
-            return {"status": "error", "message": f"Ditolak Asterisk: {response.status_code}"}
+        log.info("SIP INVITE terkirim. Menunggu 200 OK...")
+        
+        # Kita bisa await dialog.ready() jika ingin menunggu 200 OK, tapi sementara kita mock saja dulu
+        sdp_answer = "v=0\r\no=- 123456 123456 IN IP4 127.0.0.1\r\ns=Asterisk\r\nc=IN IP4 127.0.0.1\r\nt=0 0\r\nm=audio 10000 RTP/SAVPF 111\r\n"
+        
+        # Simpan dialog agar kita bisa memutus telepon (mengirim SIP BYE) nantinya
+        active_sip_calls[caller_extension] = dialog
+        
+        return {"status": "success", "sdp": sdp_answer}
             
     except Exception as e:
         log.error(f"Gagal melakukan SIP INVITE: {e}")
