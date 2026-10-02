@@ -18,8 +18,8 @@ RUN apt-get update && apt-get install -y \
 COPY requirements.txt /app/
 RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
-# Tambahan library untuk SIP Gateway
-RUN pip install aiosip
+# Tambahan library untuk SIP Gateway (menggunakan aiovoip, versi modern dari aiosip)
+RUN pip install aiovoip
 
 # Copy project files
 COPY . /app/

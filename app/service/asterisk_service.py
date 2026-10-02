@@ -17,7 +17,7 @@ collections.Mapping = collections.abc.Mapping
 collections.Iterable = collections.abc.Iterable
 collections.Iterator = collections.abc.Iterator
 
-import aiosip
+import aiovoip as aiosip
 
 log = logging.getLogger("sip-gateway")
 
