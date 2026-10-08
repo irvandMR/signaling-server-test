@@ -21,11 +21,11 @@ RUN pip install -r requirements.txt
 # Tambahan library untuk SIP Gateway (menggunakan aiovoip, versi modern dari aiosip)
 RUN pip install aiovoip
 
-# Copy project files
+# Copy project files    
 COPY . /app/
 
-# Expose port (Uvicorn berjalan di 3461)
-EXPOSE 3461
+# Expose port (Uvicorn berjalan di 8081)
+EXPOSE 8081
 
 # Command untuk menjalankan aplikasi
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "3461"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8081"]
