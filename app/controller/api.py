@@ -1,3 +1,4 @@
+from app.controller.client_controller import client_router
 import fastapi
 from app.socket.sockets import connected
 from app.core.database import get_db
@@ -5,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import text
 
 from app.controller.user_controller import user_router
+from app.handler.custome_exception import setup_exception_handlers
 
 fastapi_app = fastapi.FastAPI(
     title="Signaling Service", 
@@ -14,6 +16,10 @@ fastapi_app = fastapi.FastAPI(
 
 # Daftarkan router user
 fastapi_app.include_router(user_router)
+fastapi_app.include_router(client_router)
+
+# Register exception handlers
+setup_exception_handlers(fastapi_app)
 
 @fastapi_app.get("/health")
 async def health(db: AsyncSession = fastapi.Depends(get_db)):

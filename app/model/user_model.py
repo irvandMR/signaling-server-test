@@ -1,3 +1,4 @@
+from pydantic import BaseModel
 import uuid
 import sqlalchemy as sa
 from app.core.database import Base
@@ -14,3 +15,9 @@ class User(Base):
     password = sa.Column(sa.String(255), nullable=True)
     token = sa.Column(sa.String(255), nullable=True)
     last_update_token = sa.Column(sa.DateTime, nullable=True)
+
+# Schema request untuk validasi input dari klien
+class UserCreateRequest(BaseModel):
+    account_name: str
+    password: str
+    account_extension: str | None = None

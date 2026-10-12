@@ -41,7 +41,14 @@ async def originate_call_with_sdp(caller_extension: str, target_extension: str, 
         
         # 1. Bangun identitas kontak
         my_contact = f"sip:{caller_extension}@{PBX_IP}"
-        target_contact = f"sip:{target_extension}@{PBX_IP}"
+        
+        # Jika target_extension sudah berupa format URI (mengandung '@'), gunakan langsung.
+        # Jika tidak, tambahkan @PBX_IP.
+        if "@" in target_extension:
+            # Contoh: target_extension bernilai "sip:082386092523@103.92.344.0"
+            target_contact = target_extension if target_extension.startswith("sip:") else f"sip:{target_extension}"
+        else:
+            target_contact = f"sip:{target_extension}@{PBX_IP}"
         
         # 2. Buka percakapan SIP (Dialog) ke Asterisk
         # Kita generate port acak secara manual, karena aiosip ternyata mengalami bug syntax error 
