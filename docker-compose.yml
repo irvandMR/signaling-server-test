@@ -1,17 +1,21 @@
 version: '3.8'
 
 services:
-  singaling-service:
-    build: .
-    container_name: singaling_service_app
-    network_mode: "host"
+  signaling-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: signaling_service_app
+    restart: unless-stopped
+    ports:
+      - "8081:8081"
     env_file:
       - .env
-    restart: unless-stopped
-    # Jika menggunakan DB di server yang sama, pastikan network-nya terhubung
-    # networks:
-    #   - singaling_network
-
-# networks:
-#   singaling_network:
-#     driver: bridge
+    environment:
+      - PYTHONUNBUFFERED=1
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8081/docs || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s

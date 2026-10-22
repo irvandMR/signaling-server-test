@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Signaling Auth & Socket Tester</title>
+    <!-- Library Client Socket.IO v4 -->
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            padding: 24px;
+            background: #f0f2f5;
+            color: #1c1e21;
+        }
+        .container {
+            max-width: 580px;
+            margin: 0 auto;
+        }
+        .card {
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            margin-bottom: 16px;
+        }
+        h2 { margin-top: 0; color: #0d6efd; font-size: 20px; }
+        h3 { margin-top: 0; font-size: 16px; color: #333; }
+        .input-group {
+            margin-bottom: 12px;
+        }
+        label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: #555;
+        }
+        input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ced4da;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        input:focus {
+            outline: none;
+            border-color: #0d6efd;
+        }
+        .btn-group {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+        button {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-primary { background: #0d6efd; color: white; }
+        .btn-primary:hover { background: #0b5ed7; }
+        .btn-success { background: #198754; color: white; }
+        .btn-success:hover { background: #157347; }
+        .btn-secondary { background: #6c757d; color: white; }
+        .btn-secondary:hover { background: #5c636a; }
+        .btn-danger { background: #dc3545; color: white; }
+        .btn-danger:hover { background: #bb2d3b; }
+        .status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: 700;
+            font-size: 12px;
+        }
+        .status-offline { background: #ffebee; color: #c62828; }
+        .status-online { background: #e8f5e9; color: #2e7d32; }
+        .status-replaced { background: #fff3e0; color: #e65100; }
+        #logs {
+            background: #1e1e1e;
+            color: #a6e22e;
+            padding: 14px;
+            border-radius: 8px;
+            height: 220px;
+            overflow-y: auto;
+            font-family: "SFMono-Regular", Menlo, Monaco, Consolas, monospace;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+        .log-entry { margin-bottom: 4px; word-break: break-all; }
+        .log-err { color: #f92672; }
+        .log-warn { color: #fd971f; }
+        .log-info { color: #66d9ef; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="card">
+        <h2>📱 Softphone Signaling Tester</h2>
+        <p style="font-size: 13px; color: #666; margin-bottom: 0;">
+            Uji Autentikasi Token & Kebijakan 1 Extension 1 Socket (Tendang HP Lama)
+        </p>
+    </div>
+
+    <!-- 1. LOGIN SECTION -->
+    <div class="card">
+        <h3>1. Autentikasi Login (HTTP)</h3>
+        <div class="input-group">
+            <label for="extInput">Nomor Ekstensi SIP:</label>
+            <input type="text" id="extInput" placeholder="Contoh: 11099" value="11099">
+        </div>
+        <div class="input-group">
+            <label for="passInput">Password Akun:</label>
+            <input type="password" id="passInput" placeholder="Contoh: Pass1234" value="Pass1234">
+        </div>
+        <button class="btn-primary" onclick="login()">Login & Dapatkan Token</button>
+        <div style="margin-top: 10px; font-size: 13px;" id="loginInfo">
+            Token Status: <span style="color: #888;">Belum login</span>
+        </div>
+    </div>
+
+    <!-- 2. SOCKET CONNECTION SECTION -->
+    <div class="card">
+        <h3>2. Koneksi Socket.IO (WebSocket)</h3>
+        <p style="margin: 6px 0 12px 0;">
+            Status: <span id="socketBadge" class="status-badge status-offline">DISCONNECTED</span>
+            <span id="sidDisplay" style="font-size: 12px; color: #666; margin-left: 8px;"></span>
+        </p>
+        <div class="btn-group">
+            <button class="btn-success" onclick="connectWithToken()">Connect (Dengan Token)</button>
+            <button class="btn-secondary" onclick="connectWithoutToken()">Connect (Tanpa Token)</button>
+            <button class="btn-danger" onclick="disconnectSocket()">Disconnect</button>
+        </div>
+    </div>
+
+    <!-- 3. LIVE LOGS -->
+    <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <h3 style="margin: 0;">Event Log Real-Time</h3>
+            <button onclick="clearLogs()" style="padding: 4px 8px; font-size: 11px;" class="btn-secondary">Clear</button>
+        </div>
+        <div id="logs"></div>
+    </div>
+</div>
+
+<script>
+    const SERVER_URL = "http://localhost:8081";
+    let activeToken = null;
+    let socket = null;
+
+    function addLog(text, type = "normal") {
+        const logsEl = document.getElementById("logs");
+        const entry = document.createElement("div");
+        entry.className = "log-entry";
+        if (type === "error") entry.className += " log-err";
+        if (type === "warn") entry.className += " log-warn";
+        if (type === "info") entry.className += " log-info";
+
+        const time = new Date().toLocaleTimeString();
+        entry.textContent = `[${time}] ${text}`;
+        logsEl.appendChild(entry);
+        logsEl.scrollTop = logsEl.scrollHeight;
+    }
+
+    function clearLogs() {
+        document.getElementById("logs").innerHTML = "";
+    }
+
+    // 1. Prosedur Login HTTP POST /auth/login
+    async function login() {
+        const extension = document.getElementById("extInput").value.trim();
+        const password = document.getElementById("passInput").value;
+
+        if (!extension || !password) {
+            alert("Harap isi extension dan password!");
+            return;
+        }
+
+        addLog(`Mengirim request login untuk ext: ${extension}...`, "info");
+
+        try {
+            const res = await fetch(`${SERVER_URL}/auth/login`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ extension, password })
+            });
+
+            const body = await res.json();
+
+            if (res.ok && body.status === "success") {
+                activeToken = body.data.token;
+                document.getElementById("loginInfo").innerHTML = `
+                    <span style="color: #198754; font-weight: bold;">Login Berhasil!</span><br>
+                    <span style="font-size: 11px; word-break: break-all;">Token: <code>${activeToken}</code></span>
+                `;
+                addLog(`✅ Login Berhasil! Ext: ${body.data.ext}, Name: ${body.data.name}`, "info");
+                addLog(`🔑 Token aktif tersimpan: ${activeToken}`, "normal");
+            } else {
+                const errMsg = body.detail || "Gagal login";
+                document.getElementById("loginInfo").innerHTML = `<span style="color: #dc3545;">Gagal: ${errMsg}</span>`;
+                addLog(`❌ Login Ditolak: ${errMsg}`, "error");
+            }
+        } catch (err) {
+            addLog(`❌ Gagal menghubungi server: ${err.message}`, "error");
+        }
+    }
+
+    // 2. Konek dengan Token
+    function connectWithToken() {
+        if (!activeToken) {
+            alert("Silakan Login terlebih dahulu untuk mendapatkan token!");
+            return;
+        }
+
+        if (socket && socket.connected) {
+            addLog("Socket sudah dalam kondisi terhubung.", "warn");
+            return;
+        }
+
+        addLog("Menghubungkan ke Socket.IO dengan auth.token...", "info");
+
+        socket = io(SERVER_URL, {
+            auth: { token: activeToken },
+            transports: ["websocket", "polling"]
+        });
+
+        setupSocketListeners();
+    }
+
+    // 3. Konek Tanpa Token (Uji Penolakan Server)
+    function connectWithoutToken() {
+        if (socket && socket.connected) socket.disconnect();
+
+        addLog("Mencoba konek TANPA token (harus ditolak)...", "warn");
+
+        socket = io(SERVER_URL, {
+            transports: ["websocket", "polling"]
+        });
+
+        setupSocketListeners();
+    }
+
+    function setupSocketListeners() {
+        socket.on("connect", () => {
+            const badge = document.getElementById("socketBadge");
+            badge.className = "status-badge status-online";
+            badge.textContent = "CONNECTED (ONLINE)";
+            document.getElementById("sidDisplay").textContent = `(SID: ${socket.id})`;
+            addLog(`⚡ Socket Terhubung Sukses! SID: ${socket.id}`, "info");
+        });
+
+        // 🚨 EVENT TENDANG SESI HP LAMA
+        socket.on("session:replaced", (data) => {
+            const badge = document.getElementById("socketBadge");
+            badge.className = "status-badge status-replaced";
+            badge.textContent = "REPLACED (DITENDANG)";
+
+            addLog(`🚨 [SESSION:REPLACED] ${data.message}`, "error");
+            alert(`⚠️ PERINGATAN SISTEM:\n${data.message}\nKoneksi perangkat ini telah diputus.`);
+        });
+
+        socket.on("disconnect", (reason) => {
+            const badge = document.getElementById("socketBadge");
+            badge.className = "status-badge status-offline";
+            badge.textContent = "DISCONNECTED";
+            document.getElementById("sidDisplay").textContent = "";
+            addLog(`🔌 Socket terputus. Alasan: ${reason}`, "warn");
+        });
+
+        socket.on("connect_error", (err) => {
+            addLog(`⛔ Connect Error dari Server: ${err.message}`, "error");
+        });
+    }
+
+    function disconnectSocket() {
+        if (socket) {
+            socket.disconnect();
+            addLog("Koneksi diputus secara manual oleh user.", "normal");
+        }
+    }
+</script>
+
+</body>
+</html>

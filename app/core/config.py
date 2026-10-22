@@ -1,27 +1,15 @@
 from dotenv import load_dotenv
 import os
 load_dotenv()
+class Configs:
+    DATABASE : str = os.getenv('DATABASE_URL')
+    JWT_SECRET : str = os.getenv('JWT_SECRET')
+    JWT_ALGORITHM : str = os.getenv('JWT_ALGORITHM')
+    JWT_EXPIRE_MINUTES : str = os.getenv('JWT_EXPIRE_MINUTES')
 
-class Settings:
-    HOST = os.getenv("HOST")
-    PORT = int(os.getenv("PORT"))
-    RUN_APP = os.getenv("RUN_APP")
-    DATABASE_URL = os.getenv("DATABASE_URL")
-    PBX_IP = os.getenv("PBX_IP")
-    PBX_PORT = int(os.getenv("PBX_PORT"))
+    ASTERISK_WSS_URL : str = os.getenv('ASTERISK_WSS_URL')
+    SIP_DOMAIN : str = os.getenv('SIP_DOMAIN')
+
     
 
-class DevelopmentSingalingServer(Settings):
-    DEBUG = True
-
-class StaggingSingalingServer(Settings):
-    DEBUG = False
-
-class ProductionSingalingServer(Settings):
-    DEBUG = False
-
-config_by_name = {
-    "dev": DevelopmentSingalingServer,
-    "stagging": StaggingSingalingServer,
-    "production": ProductionSingalingServer,
-}
+configs = Configs()
